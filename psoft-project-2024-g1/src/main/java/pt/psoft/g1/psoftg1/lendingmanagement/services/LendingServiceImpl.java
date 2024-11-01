@@ -206,17 +206,17 @@ public class LendingServiceImpl implements LendingService {
     public List<Book> recommendMostLentBooks(int X, int Y) {
         // Passo 1: Obter os Y gêneros mais emprestados
         List<Genre> topGenres = getTopGenres(Y);
-        
+
         // Passo 2: Obter os X livros mais emprestados de cada um dos gêneros
-        List<Book> recommendedBooks = new ArrayList<>();
-        
-        for (Genre genre : topGenres) {
-            // Obter os empréstimos mais emprestados para o gênero atual
-            List<Book> lendings = getTopLentBooksByGenre(genre.getGenre(), X);
-            recommendedBooks.addAll(lendings);
+        List<Book> lendings = new ArrayList<>();
+
+        if(!topGenres.isEmpty()){
+            for (Genre genre : topGenres) {
+                lendings.addAll(getTopLentBooksByGenre(genre.getGenre(), X));
+            }
         }
 
-        return recommendedBooks;
+        return lendings;
     }
 
 

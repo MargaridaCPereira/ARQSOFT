@@ -13,6 +13,8 @@ public interface AuthorService {
 
     Optional<Author> findByAuthorNumber(Long authorNumber);
 
+    Optional<Author> findByAuthorId(String authorId);
+
     List<Author> findByName(String name);
 
     Author create(CreateAuthorRequest resource);

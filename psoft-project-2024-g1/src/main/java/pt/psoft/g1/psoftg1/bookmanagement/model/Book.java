@@ -1,6 +1,5 @@
 package pt.psoft.g1.psoftg1.bookmanagement.model;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -9,6 +8,7 @@ import pt.psoft.g1.psoftg1.authormanagement.model.Author;
 import pt.psoft.g1.psoftg1.bookmanagement.services.UpdateBookRequest;
 import pt.psoft.g1.psoftg1.exceptions.ConflictException;
 import pt.psoft.g1.psoftg1.genremanagement.model.Genre;
+import pt.psoft.g1.psoftg1.lendingmanagement.model.Lending;
 import pt.psoft.g1.psoftg1.shared.model.EntityWithPhoto;
 
 import java.util.ArrayList;
@@ -17,11 +17,11 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "Book", uniqueConstraints = {
-        @UniqueConstraint(name = "uc_book_isbn", columnNames = {"ISBN"})
+        @UniqueConstraint(name = "uc_book_isbn", columnNames = { "ISBN" })
 })
 public class Book extends EntityWithPhoto {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     long pk;
 
     @Version
@@ -45,34 +45,47 @@ public class Book extends EntityWithPhoto {
     @ManyToMany
     private List<Author> authors = new ArrayList<>();
 
+    @OneToMany(mappedBy = "book")
+    private List<Lending> lendings;
+
     @Embedded
     Description description;
 
-    private void setTitle(String title) {this.title = new Title(title);}
+    private void setTitle(String title) {
+        this.title = new Title(title);
+    }
 
     private void setIsbn(String isbn) {
         this.isbn = new Isbn(isbn);
     }
 
-    private void setDescription(String description) {this.description = new Description(description); }
+    private void setDescription(String description) {
+        this.description = new Description(description);
+    }
 
-    private void setGenre(Genre genre) {this.genre = genre; }
+    private void setGenre(Genre genre) {
+        this.genre = genre;
+    }
 
-    private void setAuthors(List<Author> authors) {this.authors = authors; }
+    private void setAuthors(List<Author> authors) {
+        this.authors = authors;
+    }
 
-    public String getDescription(){ return this.description.toString(); }
+    public String getDescription() {
+        return this.description.toString();
+    }
 
     public Book(String isbn, String title, String description, Genre genre, List<Author> authors, String photoURI) {
         setTitle(title);
         setIsbn(isbn);
-        if(description != null)
+        if (description != null)
             setDescription(description);
-        if(genre==null)
+        if (genre == null)
             throw new IllegalArgumentException("Genre cannot be null");
         setGenre(genre);
-        if(authors == null)
+        if (authors == null)
             throw new IllegalArgumentException("Author list is null");
-        if(authors.isEmpty())
+        if (authors.isEmpty())
             throw new IllegalArgumentException("Author list is empty");
 
         setAuthors(authors);
@@ -84,7 +97,7 @@ public class Book extends EntityWithPhoto {
     }
 
     public void removePhoto(long desiredVersion) {
-        if(desiredVersion != this.version) {
+        if (desiredVersion != this.version) {
             throw new ConflictException("Provided version does not match latest version of this object");
         }
 
@@ -100,28 +113,28 @@ public class Book extends EntityWithPhoto {
         Genre genre = request.getGenreObj();
         List<Author> authors = request.getAuthorObjList();
         String photoURI = request.getPhotoURI();
-        if(title != null) {
+        if (title != null) {
             setTitle(title);
         }
 
-        if(description != null) {
+        if (description != null) {
             setDescription(description);
         }
 
-        if(genre != null) {
+        if (genre != null) {
             setGenre(genre);
         }
 
-        if(authors != null) {
+        if (authors != null) {
             setAuthors(authors);
         }
 
-        if(photoURI != null)
+        if (photoURI != null)
             setPhotoInternal(photoURI);
 
     }
 
-    public String getIsbn(){
+    public String getIsbn() {
         return this.isbn.toString();
     }
 

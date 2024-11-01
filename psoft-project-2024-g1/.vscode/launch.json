@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-PsoftG1Application<psoft-g1>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "pt.psoft.g1.psoftg1.PsoftG1Application",
+            "projectName": "psoft-g1",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

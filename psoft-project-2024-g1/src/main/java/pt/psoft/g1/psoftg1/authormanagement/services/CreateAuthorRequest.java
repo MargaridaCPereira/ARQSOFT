@@ -2,6 +2,7 @@ package pt.psoft.g1.psoftg1.authormanagement.services;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,4 +28,7 @@ public class CreateAuthorRequest {
     @Getter
     @Setter
     private String photoURI;
+
+    @NotBlank(message = "ID type must not be blank")
+    private String idType;
 }

@@ -13,6 +13,7 @@ public interface AuthorRepository {
     Optional<Author> findByAuthorNumber(Long authorNumber);
     List<Author> searchByNameNameStartsWith(String name);
     List<Author> searchByNameName(String name);
+    Optional<Author> findByAuthorId(String authorId);
     Author save(Author author);
     Iterable<Author> findAll();
     Page<AuthorLendingView> findTopAuthorByLendings (Pageable pageableRules);

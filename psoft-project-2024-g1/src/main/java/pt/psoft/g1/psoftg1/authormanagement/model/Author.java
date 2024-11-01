@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.hibernate.StaleObjectStateException;
 import pt.psoft.g1.psoftg1.authormanagement.services.UpdateAuthorRequest;
 import pt.psoft.g1.psoftg1.exceptions.ConflictException;
+import pt.psoft.g1.psoftg1.idgeneratormanagement.IdGenerator;
 import pt.psoft.g1.psoftg1.shared.model.EntityWithPhoto;
 import pt.psoft.g1.psoftg1.shared.model.Name;
 
@@ -16,6 +17,10 @@ public class Author extends EntityWithPhoto {
     @Getter
     private Long authorNumber;
 
+    @Getter
+    @Column(name = "AUTHOR_ID", unique = true)
+    private String authorId;
+    
     @Version
     private long version;
 
@@ -41,6 +46,18 @@ public class Author extends EntityWithPhoto {
         return authorNumber;
     }
 
+    public static Author createWithAlphanumericId(String name, String bio, String photoURI) {
+        Author author = new Author(name, bio, photoURI);
+        author.authorId = IdGenerator.generateAlphanumericId();
+        return author;
+    }
+
+    public static Author createWithHexadecimalId(String name, String bio, String photoURI) {
+        Author author = new Author(name, bio, photoURI);
+        author.authorId = IdGenerator.generateHexadecimalId();
+        return author;
+    }
+    
     public Author(String name) {
         setName(name);
         this.bio = new Bio(""); // Pode definir como vazio ou algum valor padrão

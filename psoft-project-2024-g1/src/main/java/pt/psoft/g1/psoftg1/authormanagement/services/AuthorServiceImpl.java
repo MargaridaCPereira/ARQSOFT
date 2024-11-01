@@ -40,10 +40,17 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    public Optional<Author> findByAuthorId(String authorId) {
+        return authorRepository.findByAuthorId(authorId);
+    }
+
+    @Override
     public Author create(final CreateAuthorRequest resource) {
         /*
-         * Since photos can be null (no photo uploaded) that means the URI can be null as well.
-         * To avoid the client sending false data, photoURI has to be set to any value / null
+         * Since photos can be null (no photo uploaded) that means the URI can be null
+         * as well.
+         * To avoid the client sending false data, photoURI has to be set to any value /
+         * null
          * according to the MultipartFile photo object
          *
          * That means:
@@ -51,17 +58,29 @@ public class AuthorServiceImpl implements AuthorService {
          * - photo = null && photoURI = validString -> ignored
          * - photo = validFile && photoURI = null -> ignored
          * - photo = validFile && photoURI = validString -> photo is set
-         * */
+         */
 
-        MultipartFile photo = resource.getPhoto();
-        String photoURI = resource.getPhotoURI();
-        if(photo == null && photoURI != null || photo != null && photoURI == null) {
-            resource.setPhoto(null);
-            resource.setPhotoURI(null);
-        }
-        final Author author = mapper.create(resource);
-        return authorRepository.save(author);
-    }
+         MultipartFile photo = resource.getPhoto();
+         String photoURI = resource.getPhotoURI();
+         
+         // Verificar se a foto e o URI da foto são válidos
+         if (photo == null && photoURI != null || photo != null && photoURI == null) {
+             resource.setPhoto(null);
+             resource.setPhotoURI(null);
+         }
+     
+         // Criação do autor baseado no tipo de ID
+         Author author = mapper.create(resource);
+     
+         // Verifica se o tipo de ID é hexadecimal ou alfanumérico
+         if ("hexadecimal".equalsIgnoreCase(resource.getIdType())) {
+             author = Author.createWithHexadecimalId(resource.getName(), resource.getBio(), photoURI);
+         } else { // padrão para alfanumérico
+             author = Author.createWithAlphanumericId(resource.getName(), resource.getBio(), photoURI);
+         }
+     
+         return authorRepository.save(author);
+     }
 
     @Override
     public Author partialUpdate(final Long authorNumber, final UpdateAuthorRequest request, final long desiredVersion) {
@@ -70,8 +89,10 @@ public class AuthorServiceImpl implements AuthorService {
         final var author = findByAuthorNumber(authorNumber)
                 .orElseThrow(() -> new NotFoundException("Cannot update an object that does not yet exist"));
         /*
-         * Since photos can be null (no photo uploaded) that means the URI can be null as well.
-         * To avoid the client sending false data, photoURI has to be set to any value / null
+         * Since photos can be null (no photo uploaded) that means the URI can be null
+         * as well.
+         * To avoid the client sending false data, photoURI has to be set to any value /
+         * null
          * according to the MultipartFile photo object
          *
          * That means:
@@ -79,11 +100,11 @@ public class AuthorServiceImpl implements AuthorService {
          * - photo = null && photoURI = validString -> ignored
          * - photo = validFile && photoURI = null -> ignored
          * - photo = validFile && photoURI = validString -> photo is set
-         * */
+         */
 
         MultipartFile photo = request.getPhoto();
         String photoURI = request.getPhotoURI();
-        if(photo == null && photoURI != null || photo != null && photoURI == null) {
+        if (photo == null && photoURI != null || photo != null && photoURI == null) {
             request.setPhoto(null);
             request.setPhotoURI(null);
         }
@@ -96,14 +117,15 @@ public class AuthorServiceImpl implements AuthorService {
         // this updated object
         return authorRepository.save(author);
     }
+
     @Override
     public List<AuthorLendingView> findTopAuthorByLendings() {
-        Pageable pageableRules = PageRequest.of(0,5);
+        Pageable pageableRules = PageRequest.of(0, 5);
         return authorRepository.findTopAuthorByLendings(pageableRules).getContent();
     }
 
     @Override
-    public List<Book> findBooksByAuthorNumber(Long authorNumber){
+    public List<Book> findBooksByAuthorNumber(Long authorNumber) {
         return bookRepository.findBooksByAuthorNumber(authorNumber);
     }
 
@@ -111,6 +133,7 @@ public class AuthorServiceImpl implements AuthorService {
     public List<Author> findCoAuthorsByAuthorNumber(Long authorNumber) {
         return authorRepository.findCoAuthorsByAuthorNumber(authorNumber);
     }
+
     @Override
     public Optional<Author> removeAuthorPhoto(Long authorNumber, long desiredVersion) {
         Author author = authorRepository.findByAuthorNumber(authorNumber)
@@ -124,4 +147,3 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
 }
-
