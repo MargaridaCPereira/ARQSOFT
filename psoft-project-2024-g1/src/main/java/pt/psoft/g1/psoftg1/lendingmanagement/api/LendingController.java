@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import pt.psoft.g1.psoftg1.bookmanagement.model.Book;
 import pt.psoft.g1.psoftg1.exceptions.NotFoundException;
 import pt.psoft.g1.psoftg1.lendingmanagement.model.Lending;
 import pt.psoft.g1.psoftg1.lendingmanagement.services.CreateLendingRequest;
@@ -164,21 +166,21 @@ public class LendingController {
 
     @Operation(summary = "Recommends books for a specific reader based on their age and popular genres")
     @GetMapping("/recommendation/2")
-    public ResponseEntity<List<BookRecommendationView>> recommendBooks(
+    public ResponseEntity<List<Book>> recommendBooks(
             @RequestParam long userId, 
             @RequestParam int x) {
-        List<BookRecommendationView> recommendations = lendingService.recommendBooks(userId, x);
+        List<Book> recommendations = lendingService.recommendBooks(userId, x);
     return ResponseEntity.ok(recommendations);
     }
 
 
     @Operation(summary = "Get recommendations for the most lent books")
     @GetMapping("/recommendation/1")
-    public ResponseEntity<List<BookRecommendationView>> recommendMostLentBooks(
+    public ResponseEntity<List<Book>> recommendMostLentBooks(
             @RequestParam(value = "X", defaultValue = "5") int X, // Valor padrão para X
             @RequestParam(value = "Y", defaultValue = "3") int Y  // Valor padrão para Y
     ) {
-        List<BookRecommendationView> recommendations = lendingService.recommendMostLentBooks(X, Y);
+        List<Book> recommendations = lendingService.recommendMostLentBooks(X, Y);
         return ResponseEntity.ok(recommendations);
     }
 

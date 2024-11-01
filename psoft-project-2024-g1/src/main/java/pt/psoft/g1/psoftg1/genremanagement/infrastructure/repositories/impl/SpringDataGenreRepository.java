@@ -28,8 +28,8 @@ public interface SpringDataGenreRepository extends GenreRepository, GenreRepoCus
     List<Genre> findAllGenres();
 
     @Override
-    @Query("SELECT g FROM Genre g WHERE g.genre = :genreName" )
-    Optional<Genre> findByString(@Param("genreName")@NotNull String genre);
+    @Query("SELECT g FROM Genre g WHERE g.genre = :genreName")
+    Optional<Genre> findByString(@Param("genreName") @NotNull String genre);
 
     @Override
     @Query("SELECT new pt.psoft.g1.psoftg1.bookmanagement.services.GenreBookCountDTO(g.genre, COUNT(b))" +
@@ -38,13 +38,17 @@ public interface SpringDataGenreRepository extends GenreRepository, GenreRepoCus
             "GROUP BY g " +
             "ORDER BY COUNT(b) DESC")
     Page<GenreBookCountDTO> findTop5GenreByBookCount(Pageable pageable);
+
 }
 
-
-interface GenreRepoCustom{
+interface GenreRepoCustom {
     List<GenreLendingsPerMonthDTO> getLendingsPerMonthLastYearByGenre();
+
     List<GenreLendingsDTO> getAverageLendingsInMonth(LocalDate month, pt.psoft.g1.psoftg1.shared.services.Page page);
+
     List<GenreLendingsPerMonthDTO> getLendingsAverageDurationPerMonth(LocalDate startDate, LocalDate endDate);
+
+    List<Genre> getTopGenres(int limit);
 
 }
 
@@ -54,7 +58,7 @@ class GenreRepoCustomImpl implements GenreRepoCustom {
     private final EntityManager entityManager;
 
     @Override
-    public List<GenreLendingsPerMonthDTO> getLendingsPerMonthLastYearByGenre(){
+    public List<GenreLendingsPerMonthDTO> getLendingsPerMonthLastYearByGenre() {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> cq = cb.createTupleQuery();
         Root<Lending> lendingRoot = cq.from(Lending.class);
@@ -101,9 +105,9 @@ class GenreRepoCustomImpl implements GenreRepoCustom {
         return getGenreLendingsPerMonthDtos(groupedResults);
     }
 
-
     @Override
-    public List<GenreLendingsDTO> getAverageLendingsInMonth(LocalDate month, pt.psoft.g1.psoftg1.shared.services.Page page){
+    public List<GenreLendingsDTO> getAverageLendingsInMonth(LocalDate month,
+            pt.psoft.g1.psoftg1.shared.services.Page page) {
         int days = month.lengthOfMonth();
         LocalDate firstOfMonth = LocalDate.of(month.getYear(), month.getMonth(), 1);
         LocalDate lastOfMonth = LocalDate.of(month.getYear(), month.getMonth(), days);
@@ -136,7 +140,7 @@ class GenreRepoCustomImpl implements GenreRepoCustom {
     }
 
     @Override
-    public List<GenreLendingsPerMonthDTO> getLendingsAverageDurationPerMonth(LocalDate startDate, LocalDate endDate){
+    public List<GenreLendingsPerMonthDTO> getLendingsAverageDurationPerMonth(LocalDate startDate, LocalDate endDate) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> cq = cb.createTupleQuery();
 
@@ -147,8 +151,8 @@ class GenreRepoCustomImpl implements GenreRepoCustom {
         Expression<Integer> yearExpr = cb.function("YEAR", Integer.class, lendingRoot.get("startDate"));
         Expression<Integer> monthExpr = cb.function("MONTH", Integer.class, lendingRoot.get("startDate"));
         Expression<Long> lendingDurationInDays = cb.diff(lendingRoot.get("returnedDate"), lendingRoot.get("startDate"));
-        double nanoSecondsInADay = 86400.0*1E9;
-        Expression<Number> durationInDays = cb.quot(cb.toDouble(lendingDurationInDays),nanoSecondsInADay);
+        double nanoSecondsInADay = 86400.0 * 1E9;
+        Expression<Number> durationInDays = cb.quot(cb.toDouble(lendingDurationInDays), nanoSecondsInADay);
         Expression<Double> averageDuration = cb.avg(cb.toDouble(durationInDays));
 
         cq.multiselect(genreJoin.get("genre"), yearExpr, monthExpr, averageDuration);
@@ -182,7 +186,8 @@ class GenreRepoCustomImpl implements GenreRepoCustom {
     }
 
     @NotNull
-    private List<GenreLendingsPerMonthDTO> getGenreLendingsPerMonthDtos(Map<Integer, Map<Integer, List<GenreLendingsDTO>>> groupedResults) {
+    private List<GenreLendingsPerMonthDTO> getGenreLendingsPerMonthDtos(
+            Map<Integer, Map<Integer, List<GenreLendingsDTO>>> groupedResults) {
         List<GenreLendingsPerMonthDTO> lendingsPerMonth = new ArrayList<>();
         for (Map.Entry<Integer, Map<Integer, List<GenreLendingsDTO>>> yearEntry : groupedResults.entrySet()) {
             int yearValue = yearEntry.getKey();
@@ -195,4 +200,26 @@ class GenreRepoCustomImpl implements GenreRepoCustom {
 
         return lendingsPerMonth;
     }
+
+    @Override
+    public List<Genre> getTopGenres(int limit) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Genre> cq = cb.createQuery(Genre.class);
+        Root<Lending> lendingRoot = cq.from(Lending.class);
+        Join<Lending, Book> bookJoin = lendingRoot.join("book");
+        Join<Book, Genre> genreJoin = bookJoin.join("genre");
+
+        // Count the number of lendings per genre
+        Expression<Long> lendingCount = cb.count(lendingRoot);
+
+        cq.select(genreJoin)
+                .groupBy(genreJoin)
+                .orderBy(cb.desc(lendingCount));
+
+        TypedQuery<Genre> query = entityManager.createQuery(cq);
+        query.setMaxResults(limit); // Limit the results to the specified limit
+
+        return query.getResultList();
+    }
+
 }

@@ -1,6 +1,6 @@
 package pt.psoft.g1.psoftg1.lendingmanagement.services;
 
-import pt.psoft.g1.psoftg1.lendingmanagement.api.BookRecommendationView;
+import pt.psoft.g1.psoftg1.bookmanagement.model.Book;
 import pt.psoft.g1.psoftg1.lendingmanagement.model.Lending;
 import pt.psoft.g1.psoftg1.shared.services.Page;
 
@@ -35,7 +35,7 @@ public interface LendingService {
      * @param Y - Number of top genres to consider
      * @return List of recommended books
      */
-    List<BookRecommendationView> recommendBooks(long readerId, int X);
+    List<Book> recommendBooks(long readerId, int X);
 
 
     /**
@@ -45,7 +45,7 @@ public interface LendingService {
      * @param Y - Number of top genres to consider
      * @return List of recommended books
      */
-    List<BookRecommendationView> recommendMostLentBooks(int X, int Y);
+    List<Book> recommendMostLentBooks(int X, int Y);
 
 
 }

@@ -10,7 +10,6 @@ import org.springframework.context.annotation.PropertySource;
 import pt.psoft.g1.psoftg1.authormanagement.model.Author;
 import pt.psoft.g1.psoftg1.bookmanagement.model.Book;
 import pt.psoft.g1.psoftg1.genremanagement.model.Genre;
-import pt.psoft.g1.psoftg1.lendingmanagement.api.BookRecommendationView;
 import pt.psoft.g1.psoftg1.lendingmanagement.repositories.LendingRepository;
 import pt.psoft.g1.psoftg1.lendingmanagement.services.LendingServiceImpl;
 import pt.psoft.g1.psoftg1.readermanagement.model.ReaderDetails;

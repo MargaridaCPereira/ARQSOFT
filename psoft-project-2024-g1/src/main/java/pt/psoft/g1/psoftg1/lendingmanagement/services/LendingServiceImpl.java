@@ -7,11 +7,11 @@ import org.springframework.stereotype.Service;
 
 import pt.psoft.g1.psoftg1.bookmanagement.model.Book;
 import pt.psoft.g1.psoftg1.bookmanagement.repositories.BookRepository;
+import pt.psoft.g1.psoftg1.bookmanagement.services.GenreBookCountDTO;
 import pt.psoft.g1.psoftg1.exceptions.LendingForbiddenException;
 import pt.psoft.g1.psoftg1.exceptions.NotFoundException;
 import pt.psoft.g1.psoftg1.genremanagement.model.Genre;
 import pt.psoft.g1.psoftg1.genremanagement.repositories.GenreRepository;
-import pt.psoft.g1.psoftg1.lendingmanagement.api.BookRecommendationView;
 import pt.psoft.g1.psoftg1.lendingmanagement.model.Fine;
 import pt.psoft.g1.psoftg1.lendingmanagement.model.Lending;
 import pt.psoft.g1.psoftg1.lendingmanagement.repositories.FineRepository;
@@ -165,16 +165,16 @@ public class LendingServiceImpl implements LendingService {
 
     }
 
-    public List<Lending> getTopLentBooksByGenre(String genre, int limit) {
-        return lendingRepository.getTopLentBooksByGenre(genre, limit);
+    public List<Book> getTopLentBooksByGenre(String genre, int limit) {
+        return bookRepository.getTopLentBooksByGenre(genre, limit);
     }
 
     public List<Genre> getTopGenres(int limit) {
-        return lendingRepository.getTopGenres(limit);
+        return genreRepository.getTopGenres(limit);
     }
 
     @Override
-    public List<BookRecommendationView> recommendBooks(long userId, int X) {
+    public List<Book> recommendBooks(long userId, int X) {
         Optional<ReaderDetails> optionalReaderDetails = readerService.findByUserId(userId);
 
         if (optionalReaderDetails.isEmpty()) {
@@ -182,7 +182,7 @@ public class LendingServiceImpl implements LendingService {
         }
 
         ReaderDetails readerDetails = optionalReaderDetails.get();
-        List<Lending> lendings;
+        List<Book> lendings = new ArrayList<>();
 
         int age = readerDetails.getBirthDate().getAge(); 
 
@@ -192,7 +192,6 @@ public class LendingServiceImpl implements LendingService {
         } else if (age >= 10 && age < 18) {
             lendings = getTopLentBooksByGenre("juvenile", X);
         } else {
-            lendings = new ArrayList<>();
             List<Genre> topGenres = readerDetails.getInterestList();
             if(!topGenres.isEmpty()){
                 for (Genre genre : topGenres) {
@@ -200,43 +199,21 @@ public class LendingServiceImpl implements LendingService {
                 }
             }
         }
-
-        return lendings.stream()
-                .map(this::convertToBookRecommendationView) // Converter Lending para BookRecommendationView
-                .distinct()
-                .collect(Collectors.toList());
+        return lendings;
     }
-
-    private BookRecommendationView convertToBookRecommendationView(Lending lending) {
-        String title = lending.getBook().getTitle().toString(); // Assumindo que getTitle() retorna um objeto do tipo
-                                                                // Title
-        String genre = lending.getBook().getGenre().getGenre(); // Assumindo que getGenre() retorna um objeto do tipo
-                                                                // Genre
-
-        return new BookRecommendationView(lending.getBook().getId(), title, genre);
-    }
-
-
 
     @Override
-    public List<BookRecommendationView> recommendMostLentBooks(int X, int Y) {
+    public List<Book> recommendMostLentBooks(int X, int Y) {
         // Passo 1: Obter os Y gêneros mais emprestados
         List<Genre> topGenres = getTopGenres(Y);
         
         // Passo 2: Obter os X livros mais emprestados de cada um dos gêneros
-        List<BookRecommendationView> recommendedBooks = new ArrayList<>();
+        List<Book> recommendedBooks = new ArrayList<>();
         
         for (Genre genre : topGenres) {
             // Obter os empréstimos mais emprestados para o gênero atual
-            List<Lending> lendings = getTopLentBooksByGenre(genre.getGenre(), X);
-            
-            // Converter a lista de Lending para BookRecommendationView
-            List<BookRecommendationView> books = lendings.stream()
-                    .map(this::convertToBookRecommendationView) // Converter Lending para BookRecommendationView
-                    .distinct()
-                    .collect(Collectors.toList());
-            
-            recommendedBooks.addAll(books);
+            List<Book> lendings = getTopLentBooksByGenre(genre.getGenre(), X);
+            recommendedBooks.addAll(lendings);
         }
 
         return recommendedBooks;

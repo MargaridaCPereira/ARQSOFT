@@ -16,9 +16,6 @@ public interface LendingRepository {
     Double getAverageDuration();
     Double getAvgLendingDurationByIsbn(String isbn);
 
-    List<Lending> getTopLentBooksByGenre(String genre, int limit);
-    List<Genre> getTopGenres(int limit);
-
     List<Lending> getOverdue(Page page);
     List<Lending> searchLendings(Page page, String readerNumber, String isbn, Boolean returned, LocalDate startDate, LocalDate endDate);
 

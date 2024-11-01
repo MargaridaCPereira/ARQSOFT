@@ -24,7 +24,7 @@ public interface BookRepository {
     Optional<Book> findByIsbn(@Param("isbn") String isbn);
     Page<BookCountDTO> findTop5BooksLent(@Param("oneYearAgo") LocalDate oneYearAgo, Pageable pageable);
     List<Book> findBooksByAuthorNumber(Long authorNumber);
-
+    List<Book> getTopLentBooksByGenre(@Param("genre") String genre, @Param("limit") int limit);
     List<Book> searchBooks(pt.psoft.g1.psoftg1.shared.services.Page page, SearchBooksQuery query);
 
     Book save(Book book);

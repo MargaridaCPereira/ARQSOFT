@@ -17,6 +17,7 @@ import pt.psoft.g1.psoftg1.bookmanagement.model.Isbn;
 import pt.psoft.g1.psoftg1.bookmanagement.repositories.BookRepository;
 import pt.psoft.g1.psoftg1.bookmanagement.services.SearchBooksQuery;
 import pt.psoft.g1.psoftg1.genremanagement.model.Genre;
+import pt.psoft.g1.psoftg1.lendingmanagement.model.Lending;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -24,6 +25,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SpringDataBookRepository  extends BookRepository, BookRepoCustom, CrudRepository<Book, Isbn> {
+
+
+    /// Faz aqui o getTopLentBooksByGenre
+
 
     @Query("SELECT b " +
             "FROM Book b " +
@@ -75,6 +80,7 @@ public interface SpringDataBookRepository  extends BookRepository, BookRepoCusto
 
 interface BookRepoCustom {
     List<Book> searchBooks(pt.psoft.g1.psoftg1.shared.services.Page page, SearchBooksQuery query);
+    List<Book> getTopLentBooksByGenre(String genre, int limit);
 
 }
 
@@ -118,4 +124,30 @@ class BookRepoCustomImpl implements BookRepoCustom {
 
         return q.getResultList();
     }
+
+
+    @Override
+    public List<Book> getTopLentBooksByGenre(String genre, int limit) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Book> cq = cb.createQuery(Book.class);
+        Root<Book> bookRoot = cq.from(Book.class);
+        Join<Book, Genre> genreJoin = bookRoot.join("genre");
+        Join<Book, Lending> lendingJoin = bookRoot.join("lendings", JoinType.LEFT); // Join opcional com "lendings"
+
+        // Filtra pelo gênero especificado
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(cb.equal(genreJoin.get("genre"), genre));
+
+        // Define o agrupamento por livro e ordenação pela contagem de empréstimos
+        cq.select(bookRoot)
+            .where(predicates.toArray(new Predicate[0]))
+            .groupBy(bookRoot)
+            .orderBy(cb.desc(cb.count(lendingJoin))); // Ordena pelo número de empréstimos em ordem decrescente
+
+        TypedQuery<Book> query = em.createQuery(cq);
+        query.setMaxResults(limit); // Define o limite
+
+        return query.getResultList();
+    }
+
 }
