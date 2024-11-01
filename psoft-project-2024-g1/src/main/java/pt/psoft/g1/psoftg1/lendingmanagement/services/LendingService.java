@@ -1,5 +1,6 @@
 package pt.psoft.g1.psoftg1.lendingmanagement.services;
 
+import pt.psoft.g1.psoftg1.lendingmanagement.api.BookRecommendationView;
 import pt.psoft.g1.psoftg1.lendingmanagement.model.Lending;
 import pt.psoft.g1.psoftg1.shared.services.Page;
 
@@ -25,6 +26,26 @@ public interface LendingService {
     List<Lending> getOverdue(Page page);
     Double getAvgLendingDurationByIsbn(String isbn);
     List<Lending> searchLendings(Page page, SearchLendingQuery request);
+
+    /**
+     * Recommends books to a reader based on age and popular genres.
+     *
+     * @param readerId - ID of the reader to base recommendations on
+     * @param X - Number of books to recommend
+     * @param Y - Number of top genres to consider
+     * @return List of recommended books
+     */
+    List<BookRecommendationView> recommendBooks(long readerId, int X);
+
+
+    /**
+     * Recommends books 
+     *
+     * @param X - Number of books to recommend
+     * @param Y - Number of top genres to consider
+     * @return List of recommended books
+     */
+    List<BookRecommendationView> recommendMostLentBooks(int X, int Y);
 
 
 }

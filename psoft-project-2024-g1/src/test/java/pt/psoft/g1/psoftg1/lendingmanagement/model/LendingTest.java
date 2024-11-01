@@ -1,43 +1,74 @@
 package pt.psoft.g1.psoftg1.lendingmanagement.model;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import pt.psoft.g1.psoftg1.authormanagement.model.Author;
 import pt.psoft.g1.psoftg1.bookmanagement.model.Book;
 import pt.psoft.g1.psoftg1.genremanagement.model.Genre;
+import pt.psoft.g1.psoftg1.lendingmanagement.api.BookRecommendationView;
+import pt.psoft.g1.psoftg1.lendingmanagement.repositories.LendingRepository;
+import pt.psoft.g1.psoftg1.lendingmanagement.services.LendingServiceImpl;
 import pt.psoft.g1.psoftg1.readermanagement.model.ReaderDetails;
+import pt.psoft.g1.psoftg1.readermanagement.services.ReaderService;
 import pt.psoft.g1.psoftg1.usermanagement.model.Reader;
+
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @PropertySource({"classpath:config/library.properties"})
 class LendingTest {
+
     private static final ArrayList<Author> authors = new ArrayList<>();
-    private static Book book;
-    private static ReaderDetails readerDetails;
+    private Book book;
+    private ReaderDetails readerDetails;
+
     @Value("${lendingDurationInDays}")
     private int lendingDurationInDays;
+    
     @Value("${fineValuePerDayInCents}")
     private int fineValuePerDayInCents;
 
-    @BeforeAll
-    public static void setup(){
+    
+    @Mock
+    private ReaderService readerService;
+
+    @Mock
+    private LendingRepository lendingRepository;
+
+    @InjectMocks
+    private LendingServiceImpl lendingService;
+
+
+    @BeforeEach
+    public void setup() {
+
+        MockitoAnnotations.openMocks(this);
+        // Inicializar o autor e o livro
         Author author = new Author("Manuel Antonio Pina",
                 "Manuel António Pina foi um jornalista e escritor português, premiado em 2011 com o Prémio Camões",
                 null);
         authors.add(author);
+        
         book = new Book("9782826012092",
                 "O Inspetor Max",
                 "conhecido pastor-alemão que trabalha para a Judiciária, vai ser fundamental para resolver um importante caso de uma rede de malfeitores que quer colocar uma bomba num megaconcerto de uma ilustre cantora",
                 new Genre("Romance"),
                 authors,
                 null);
+
         readerDetails = new ReaderDetails(1,
                 Reader.newReader("manuel@gmail.com", "Manuelino123!", "Manuel Sarapinto das Coives"),
                 "2000-01-01",
@@ -47,44 +78,48 @@ class LendingTest {
                 true,
                 null,
                 null);
+
     }
 
     @Test
-    void ensureBookNotNull(){
-        assertThrows(IllegalArgumentException.class, () -> new Lending(null, readerDetails, 1, lendingDurationInDays, fineValuePerDayInCents));
+    void ensureBookNotNull() {
+        assertThrows(IllegalArgumentException.class, () -> 
+            new Lending(null, readerDetails, 1, lendingDurationInDays, fineValuePerDayInCents));
     }
 
     @Test
-    void ensureReaderNotNull(){
-        assertThrows(IllegalArgumentException.class, () -> new Lending(book, null, 1, lendingDurationInDays, fineValuePerDayInCents));
+    void ensureReaderNotNull() {
+        assertThrows(IllegalArgumentException.class, () -> 
+            new Lending(book, null, 1, lendingDurationInDays, fineValuePerDayInCents));
     }
 
     @Test
-    void ensureValidReaderNumber(){
-        assertThrows(IllegalArgumentException.class, () -> new Lending(book, readerDetails, -1, lendingDurationInDays, fineValuePerDayInCents));
+    void ensureValidReaderNumber() {
+        assertThrows(IllegalArgumentException.class, () -> 
+            new Lending(book, readerDetails, -1, lendingDurationInDays, fineValuePerDayInCents));
     }
 
     @Test
-    void testSetReturned(){
+    void testSetReturned() {
         Lending lending = new Lending(book, readerDetails, 1, lendingDurationInDays, fineValuePerDayInCents);
-        lending.setReturned(0,null);
+        lending.setReturned(0, null);
         assertEquals(LocalDate.now(), lending.getReturnedDate());
     }
 
     @Test
-    void testGetDaysDelayed(){
+    void testGetDaysDelayed() {
         Lending lending = new Lending(book, readerDetails, 1, lendingDurationInDays, fineValuePerDayInCents);
         assertEquals(0, lending.getDaysDelayed());
     }
 
     @Test
-    void testGetDaysUntilReturn(){
+    void testGetDaysUntilReturn() {
         Lending lending = new Lending(book, readerDetails, 1, lendingDurationInDays, fineValuePerDayInCents);
         assertEquals(Optional.of(lendingDurationInDays), lending.getDaysUntilReturn());
     }
 
     @Test
-    void testGetDaysOverDue(){
+    void testGetDaysOverDue() {
         Lending lending = new Lending(book, readerDetails, 1, lendingDurationInDays, fineValuePerDayInCents);
         assertEquals(Optional.empty(), lending.getDaysOverdue());
     }
@@ -131,4 +166,9 @@ class LendingTest {
         assertNull(lending.getReturnedDate());
     }
 
+
+
+    
+    
+    
 }

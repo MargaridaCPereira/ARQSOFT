@@ -199,4 +199,9 @@ public class ReaderServiceImpl implements ReaderService {
 
         return list;
     }
+
+    @Override
+    public Optional<ReaderDetails> findByUserId(Long userId) {
+        return readerRepo.findByUserId(userId); // Presumindo que você tenha um método no repositório para isso
+    }
 }

@@ -41,13 +41,19 @@ public class Author extends EntityWithPhoto {
         return authorNumber;
     }
 
+    public Author(String name) {
+        setName(name);
+        this.bio = new Bio(""); // Pode definir como vazio ou algum valor padrão
+        // Se necessário, defina photoURI também ou faça isso em outro lugar
+    }
+
     public Author(String name, String bio, String photoURI) {
         setName(name);
         setBio(bio);
         setPhotoInternal(photoURI);
     }
 
-    protected Author() {
+    public Author() {
         // got ORM only
     }
 

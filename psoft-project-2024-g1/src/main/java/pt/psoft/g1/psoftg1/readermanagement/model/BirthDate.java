@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.access.AccessDeniedException;
+import java.time.Period;
+
 
 import java.time.LocalDate;
 
@@ -53,6 +55,13 @@ public class BirthDate {
         }
 
         this.birthDate = userDate;
+    }
+
+    public int getAge() {
+        if (birthDate == null) {
+            throw new IllegalStateException("Birth date is not set.");
+        }
+        return Period.between(birthDate, LocalDate.now()).getYears(); // Calcula a idade
     }
 
     public String toString() {

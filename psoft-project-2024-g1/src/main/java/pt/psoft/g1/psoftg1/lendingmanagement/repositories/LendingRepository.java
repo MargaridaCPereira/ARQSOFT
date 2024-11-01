@@ -1,5 +1,6 @@
 package pt.psoft.g1.psoftg1.lendingmanagement.repositories;
 
+import pt.psoft.g1.psoftg1.genremanagement.model.Genre;
 import pt.psoft.g1.psoftg1.lendingmanagement.model.Lending;
 import pt.psoft.g1.psoftg1.shared.services.Page;
 
@@ -15,6 +16,8 @@ public interface LendingRepository {
     Double getAverageDuration();
     Double getAvgLendingDurationByIsbn(String isbn);
 
+    List<Lending> getTopLentBooksByGenre(String genre, int limit);
+    List<Genre> getTopGenres(int limit);
 
     List<Lending> getOverdue(Page page);
     List<Lending> searchLendings(Page page, String readerNumber, String isbn, Boolean returned, LocalDate startDate, LocalDate endDate);
