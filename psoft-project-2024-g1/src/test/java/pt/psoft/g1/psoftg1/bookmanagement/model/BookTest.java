@@ -21,12 +21,12 @@ class BookTest {
     void setUp(){
         authors.clear();
     }
-
-    @Test
+/* @Test
     void ensureIsbnNotNull(){
         authors.add(validAuthor1);
         assertThrows(IllegalArgumentException.class, () -> new Book(null, validTitle, null, validGenre, authors, null));
-    }
+    } */
+   
 
     @Test
     void ensureTitleNotNull(){

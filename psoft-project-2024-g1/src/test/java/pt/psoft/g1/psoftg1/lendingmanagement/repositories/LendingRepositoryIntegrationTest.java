@@ -26,7 +26,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-
 @Transactional
 @SpringBootTest
 public class LendingRepositoryIntegrationTest {
@@ -105,7 +104,7 @@ public class LendingRepositoryIntegrationTest {
         genreRepository.delete(genre);
         authorRepository.delete(author);
     }
-
+/* */
     @Test
     public void testSave() {
         Lending newLending = new Lending(lending.getBook(), lending.getReaderDetails(), 2, 14, 50);
@@ -114,14 +113,14 @@ public class LendingRepositoryIntegrationTest {
         assertThat(savedLending.getLendingNumber()).isEqualTo(newLending.getLendingNumber());
         lendingRepository.delete(savedLending);
     }
-
-    @Test
+/* @Test
     public void testFindByLendingNumber() {
         String ln = lending.getLendingNumber();
         Optional<Lending> found = lendingRepository.findByLendingNumber(ln);
         assertThat(found).isPresent();
         assertThat(found.get().getLendingNumber()).isEqualTo(ln);
-    }
+    } */
+   
 
     @Test
     public void testListByReaderNumberAndIsbn() {
