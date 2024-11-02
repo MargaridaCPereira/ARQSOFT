@@ -163,28 +163,6 @@ public class LendingController {
         return new ListResponse<>(lendingViewMapper.toLendingView(readerList));
     }
 
-
-    @Operation(summary = "Recommends books for a specific reader based on their age and popular genres")
-    @GetMapping("/recommendation/2")
-    public ResponseEntity<List<Book>> recommendBooks(
-            @RequestParam long userId, 
-            @RequestParam int x) {
-        List<Book> recommendations = lendingService.recommendBooks(userId, x);
-    return ResponseEntity.ok(recommendations);
-    }
-
-
-    @Operation(summary = "Get recommendations for the most lent books")
-    @GetMapping("/recommendation/1")
-    public ResponseEntity<List<Book>> recommendMostLentBooks(
-            @RequestParam(value = "X", defaultValue = "5") int X, // Valor padrão para X
-            @RequestParam(value = "Y", defaultValue = "3") int Y  // Valor padrão para Y
-    ) {
-        List<Book> recommendations = lendingService.recommendMostLentBooks(X, Y);
-        return ResponseEntity.ok(recommendations);
-    }
-
-
 /*    @Operation(summary = "Get list monthly average lendings per reader")
     @GetMapping(value = "/averageMonthlyPerReader")
     public ListResponse<ReaderLendingsAvgPerMonthView>getAverageMonthlyPerReader(
