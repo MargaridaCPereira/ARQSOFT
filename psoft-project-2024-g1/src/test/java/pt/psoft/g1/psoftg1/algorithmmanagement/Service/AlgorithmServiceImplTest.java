@@ -1,4 +1,4 @@
-package pt.psoft.g1.psoftg1.algorithms.Service;
+package pt.psoft.g1.psoftg1.algorithmmanagement.Service;
 
 import org.hibernate.StaleObjectStateException;
 import org.junit.jupiter.api.AfterEach;
@@ -47,9 +47,6 @@ class AlgorithmServiceImplTest {
 
         @InjectMocks
         private AlgorithmServiceImpl algorithmServiceImpl; // Mocks serão injetados aqui
-
-        @Mock
-        private LendingRepository lendingRepository;
 
         @Mock
         private ReaderRepository readerRepository;
@@ -121,17 +118,6 @@ class AlgorithmServiceImplTest {
                                 true,
                                 null, null);
                 when(readerRepository.save(readerDetails)).thenReturn(readerDetails);
-
-                // Create and save the lending
-                lending = Lending.newBootstrappingLending(book,
-                                readerDetails,
-                                LocalDate.now().getYear(),
-                                999,
-                                LocalDate.of(LocalDate.now().getYear(), 1, 1),
-                                LocalDate.of(LocalDate.now().getYear(), 1, 11),
-                                15,
-                                300);
-                when(lendingRepository.save(lending)).thenReturn(lending);
         }
 
         @AfterEach
