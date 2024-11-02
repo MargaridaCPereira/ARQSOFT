@@ -49,7 +49,7 @@ public class LendingController {
     private final LendingViewMapper lendingViewMapper;
 
     @Operation(summary = "Creates a new Lending")
-    @PostMapping
+    @PostMapping(value = "/create")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<LendingView> create(@Valid @RequestBody final CreateLendingRequest resource) {
 
