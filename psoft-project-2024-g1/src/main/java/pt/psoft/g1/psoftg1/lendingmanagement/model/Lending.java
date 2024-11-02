@@ -117,6 +117,9 @@ public class Lending {
     @Getter
     private int fineValuePerDayInCents;
 
+    @Getter
+    @Column(name = "LENDING_ID", unique = true)
+    private String lendingId;
 
     /**
      * Constructs a new {@code Lending} object to be persisted in the database.
@@ -129,7 +132,7 @@ public class Lending {
      * @param       seq sequential number, which should be obtained from the year's count on the database.
      * @throws      NullPointerException if any of the arguments is {@code null}
      * */
-    public Lending(Book book, ReaderDetails readerDetails, int seq, int lendingDuration, int fineValuePerDayInCents){
+    public Lending(Book book, ReaderDetails readerDetails, int seq, int lendingDuration, int fineValuePerDayInCents, String lendingId){
         try {
             this.book = Objects.requireNonNull(book);
             this.readerDetails = Objects.requireNonNull(readerDetails);
@@ -141,6 +144,7 @@ public class Lending {
         this.limitDate = LocalDate.now().plusDays(lendingDuration);
         this.returnedDate = null;
         this.fineValuePerDayInCents = fineValuePerDayInCents;
+        this.lendingId = lendingId;
         setDaysUntilReturn();
         setDaysOverdue();
     }

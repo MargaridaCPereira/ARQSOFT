@@ -26,37 +26,24 @@ public class IdGenerator {
     }
 
     public static String generateAlphanumericId() {
-        String uniqueValue = generateRandomAlphanumeric(16);
-        return hashToAlphanumeric(uniqueValue, 20);
+        long timestamp = System.currentTimeMillis();
+        return hashToAlphanumeric(String.valueOf(timestamp));
     }
 
-    private static String generateRandomAlphanumeric(int length) {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        SecureRandom secureRandom = new SecureRandom();
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            int index = secureRandom.nextInt(chars.length());
-            sb.append(chars.charAt(index));
-        }
-        return sb.toString();
-    }
-
-    private static String hashToAlphanumeric(String input, int length) {
+    private static String hashToAlphanumeric(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(input.getBytes());
 
-            StringBuilder hexString = new StringBuilder();
+            String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            StringBuilder alphanumericString = new StringBuilder();
+
             for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1)
-                    hexString.append('0');
-                hexString.append(hex);
+                int index = Byte.toUnsignedInt(b) % chars.length();
+                alphanumericString.append(chars.charAt(index));
             }
 
-            return hexString.toString()
-                    .replaceAll("[^a-zA-Z0-9]", "")
-                    .substring(0, Math.min(length, hexString.length()));
+            return alphanumericString.substring(0, 20);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Error generating hash", e);
         }

@@ -12,6 +12,7 @@ import pt.psoft.g1.psoftg1.exceptions.LendingForbiddenException;
 import pt.psoft.g1.psoftg1.exceptions.NotFoundException;
 import pt.psoft.g1.psoftg1.genremanagement.model.Genre;
 import pt.psoft.g1.psoftg1.genremanagement.repositories.GenreRepository;
+import pt.psoft.g1.psoftg1.idgeneratormanagement.IdGenerator;
 import pt.psoft.g1.psoftg1.lendingmanagement.model.Fine;
 import pt.psoft.g1.psoftg1.lendingmanagement.model.Lending;
 import pt.psoft.g1.psoftg1.lendingmanagement.repositories.FineRepository;
@@ -69,32 +70,42 @@ public class LendingServiceImpl implements LendingService {
     @Override
     public Lending create(final CreateLendingRequest resource) {
         int count = 0;
-
+    
+        // Validação de livros em atraso
         Iterable<Lending> lendingList = lendingRepository.listOutstandingByReaderNumber(resource.getReaderNumber());
         for (Lending lending : lendingList) {
-            // Business rule: cannot create a lending if user has late outstanding books to
-            // return.
             if (lending.getDaysDelayed() > 0) {
                 throw new LendingForbiddenException("Reader has book(s) past their due date");
             }
             count++;
-            // Business rule: cannot create a lending if user already has 3 outstanding
-            // books to return.
             if (count >= 3) {
                 throw new LendingForbiddenException("Reader has three books outstanding already");
             }
         }
-
+    
+        // Verifica a existência do livro e do leitor
         final var b = bookRepository.findByIsbn(resource.getIsbn())
                 .orElseThrow(() -> new NotFoundException("Book not found"));
         final var r = readerRepository.findByReaderNumber(resource.getReaderNumber())
                 .orElseThrow(() -> new NotFoundException("Reader not found"));
-        int seq = lendingRepository.getCountFromCurrentYear() + 1;
-        final Lending l = new Lending(b, r, seq, lendingDurationInDays, fineValuePerDayInCents);
+    
+                String lendingId;
 
+        if ("hexadecimal".equalsIgnoreCase(resource.getIdType())) {
+            lendingId = IdGenerator.generateHexadecimalId(); 
+        } else if ("alfanumerico".equalsIgnoreCase(resource.getIdType())) {
+            lendingId = IdGenerator.generateAlphanumericId(); 
+        } else {
+            throw new IllegalArgumentException("Invalid ID type. Only 'hexadecimal' or 'alfanumerico' are allowed.");
+        }
+    
+        // Criação do objeto Lending com o ID
+        int seq = lendingRepository.getCountFromCurrentYear() + 1;
+        final Lending l = new Lending(b, r, seq, lendingDurationInDays, fineValuePerDayInCents, lendingId);
+    
         return lendingRepository.save(l);
     }
-
+    
     @Override
     public Lending setReturned(final String lendingNumber, final SetLendingReturnedRequest resource,
             final long desiredVersion) {
