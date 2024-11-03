@@ -31,7 +31,7 @@ public class AlgorithmController {
     }
 
 
-    @Operation(summary = "Get recommendations for the most lent books")
+    @Operation(summary = "Get recommendations for the most lent books of the most lent genres")
     @GetMapping("/recommendation/1")
     public ResponseEntity<List<Book>> recommendMostLentBooks(
             @RequestParam(value = "X", defaultValue = "5") int X, // Valor padrão para X
