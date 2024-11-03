@@ -16,21 +16,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
-/**
- * Based on https://www.baeldung.com/spring-boot-testing
- * <p>Adaptations to Junit 5 with ChatGPT
- */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class AuthorServiceImplIntegrationTest {
-    
+
     @Autowired
     private AuthorService authorService;
-    
+
     @MockBean
     private AuthorRepository authorRepository;
 
@@ -49,10 +46,22 @@ public class AuthorServiceImplIntegrationTest {
 
     @Test
     public void whenValidId_thenAuthorShouldBeFound() {
-        Long id = 1L;
-        Optional<Author> found = authorService.findByAuthorNumber(id);
-        found.ifPresent(author -> assertThat(author.getId())
-                .isEqualTo(id));
+        // Arrange
+        String authorId = "5f8d0f9e3c6b2a000f1c2d3e4";
+        Author mockAuthor = new Author("Alex", "O Alex escreveu livros", null);
+        mockAuthor.setAuthorId(authorId); // Setando um ID para o autor simulado
+
+        when(authorRepository.findByAuthorId(authorId)).thenReturn(Optional.of(mockAuthor));
+
+        // Act
+        Optional<Author> found = authorService.findByAuthorId(authorId); // Mudando para findByAuthorId
+
+        // Assert
+        assertThat(found).isPresent();
+        found.ifPresent(author -> assertThat(author.getAuthorId()).isEqualTo(authorId));
+
+        // Verifica se o repositório foi consultado pelo ID
+        verify(authorRepository).findByAuthorId(authorId); // Verificando o ID correto
     }
 
     @Test
@@ -84,5 +93,10 @@ public class AuthorServiceImplIntegrationTest {
         assertThat(actualAuthor.getAuthorId()).isEqualTo(generatedId);
         assertThat(actualAuthor.getName()).isEqualTo("John Doe");
         assertThat(actualAuthor.getBio()).isEqualTo("A new author");
+
+        // Verifica se o método save foi chamado
+        verify(authorRepository).save(any(Author.class));
+        // Verifica se o gerador de ID foi chamado
+        verify(idGeneratorType).generateId();
     }
 }

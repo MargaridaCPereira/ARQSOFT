@@ -27,6 +27,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -49,7 +51,7 @@ public class LendingServiceImplIntegrationTest {
     private IdGeneratorType idGeneratorType;
 
     private Book book;
-    private ReaderDetails readerDetails; // Change from Reader to ReaderDetails
+    private ReaderDetails readerDetails;
 
     @BeforeEach
     public void setUp() {
@@ -66,11 +68,7 @@ public class LendingServiceImplIntegrationTest {
 
         // Configure a mock reader using ReaderDetails
         Reader mockReader = Reader.newReader("reader_username", "Reader_password1", "Reader Name");
-        readerDetails = new ReaderDetails(2024 / 10, mockReader, "2000-01-01", "912345678", true, true, true, null,
-                null);
-
-        new Lending(book, readerDetails, 1, 14, 100, "b0db4fc9194bacc6b461dc85");
-
+        readerDetails = new ReaderDetails(2024 / 10, mockReader, "2000-01-01", "912345678", true, true, true, null, null);
     }
 
     @Test
@@ -78,19 +76,18 @@ public class LendingServiceImplIntegrationTest {
         // Arrange
         CreateLendingRequest createLendingRequest = new CreateLendingRequest();
         createLendingRequest.setIsbn(book.getIsbn());
-        createLendingRequest.setReaderNumber(readerDetails.getReaderNumber()); // Use readerDetails
+        createLendingRequest.setReaderNumber(readerDetails.getReaderNumber());
 
         String generatedId = "5f8d0f9e3c6b2a000f1c2d3e4"; // Example hexadecimal ID
 
         // Mocking the behavior of repositories
         when(lendingRepository.listOutstandingByReaderNumber(readerDetails.getReaderNumber())).thenReturn(List.of());
         when(bookRepository.findByIsbn(book.getIsbn())).thenReturn(Optional.of(book));
-        when(readerRepository.findByReaderNumber(readerDetails.getReaderNumber()))
-                .thenReturn(Optional.of(readerDetails)); // Use readerDetails
+        when(readerRepository.findByReaderNumber(readerDetails.getReaderNumber())).thenReturn(Optional.of(readerDetails));
         when(idGeneratorType.generateId()).thenReturn(generatedId);
         when(lendingRepository.getCountFromCurrentYear()).thenReturn(0);
 
-        Lending expectedLending = new Lending(book, readerDetails, 1, 14, 10, generatedId); // Use readerDetails
+        Lending expectedLending = new Lending(book, readerDetails, 1, 14, 10, generatedId);
         when(lendingRepository.save(any(Lending.class))).thenReturn(expectedLending);
 
         // Act
@@ -100,7 +97,10 @@ public class LendingServiceImplIntegrationTest {
         assertThat(actualLending).isNotNull();
         assertThat(actualLending.getLendingId()).isEqualTo(generatedId);
         assertThat(actualLending.getBook()).isEqualTo(book);
-        assertThat(actualLending.getReaderDetails()).isEqualTo(readerDetails); // Use readerDetails
+        assertThat(actualLending.getReaderDetails()).isEqualTo(readerDetails);
+        
+        // Verifying the state of lending repository
+        verify(lendingRepository).save(any(Lending.class)); // Verifying that the save method was called
     }
 
     @Test
@@ -111,17 +111,18 @@ public class LendingServiceImplIntegrationTest {
         createLendingRequest.setReaderNumber(readerDetails.getReaderNumber());
 
         // Mocking the behavior to simulate three outstanding books
-        Lending outstandingLending1 = new Lending(book, readerDetails, 1, 14, 100, "lendingId1");
-        Lending outstandingLending2 = new Lending(book, readerDetails, 2, 14, 100, "lendingId2");
-        Lending outstandingLending3 = new Lending(book, readerDetails, 3, 14, 100, "lendingId3");
+        Lending outstandingLending1 = new Lending(book, readerDetails, 1, 14, 100, "5f8d0f9e3c6b2a000f1c2d3e5");
+        Lending outstandingLending2 = new Lending(book, readerDetails, 2, 14, 100, "5f8d0f9e3c6b2a000f1c2d3e6");
+        Lending outstandingLending3 = new Lending(book, readerDetails, 3, 14, 100, "5f8d0f9e3c6b2a000f1c2d3e7");
 
-        // Mock do repositório
-        when(lendingRepository.listOutstandingByReaderNumber(readerDetails.getReaderNumber()))
-                .thenReturn(List.of(outstandingLending1, outstandingLending2, outstandingLending3));
+        when(lendingRepository.listOutstandingByReaderNumber(readerDetails.getReaderNumber())).thenReturn(List.of(outstandingLending1, outstandingLending2, outstandingLending3));
 
         // Act & Assert
         assertThatExceptionOfType(LendingForbiddenException.class)
                 .isThrownBy(() -> lendingService.create(createLendingRequest))
                 .withMessage("Reader has three books outstanding already");
+        
+        // Verifying no save was attempted when exception is thrown
+        verify(lendingRepository, never()).save(any(Lending.class)); // Ensuring save is not called
     }
 }
