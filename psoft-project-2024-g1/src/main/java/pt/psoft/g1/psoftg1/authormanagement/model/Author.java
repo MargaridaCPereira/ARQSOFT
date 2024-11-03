@@ -2,6 +2,8 @@ package pt.psoft.g1.psoftg1.authormanagement.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
+
 import org.hibernate.StaleObjectStateException;
 import pt.psoft.g1.psoftg1.authormanagement.services.UpdateAuthorRequest;
 import pt.psoft.g1.psoftg1.exceptions.ConflictException;
@@ -17,10 +19,11 @@ public class Author extends EntityWithPhoto {
     @Getter
     private Long authorNumber;
 
+    @Setter
     @Getter
     @Column(name = "AUTHOR_ID", unique = true)
     private String authorId;
-    
+
     @Version
     private long version;
 
@@ -46,22 +49,9 @@ public class Author extends EntityWithPhoto {
         return authorNumber;
     }
 
-    public static Author createWithAlphanumericId(String name, String bio, String photoURI) {
-        Author author = new Author(name, bio, photoURI);
-        author.authorId = IdGenerator.generateAlphanumericId();
-        return author;
-    }
-
-    public static Author createWithHexadecimalId(String name, String bio, String photoURI) {
-        Author author = new Author(name, bio, photoURI);
-        author.authorId = IdGenerator.generateHexadecimalId();
-        return author;
-    }
-    
     public Author(String name) {
         setName(name);
-        this.bio = new Bio(""); // Pode definir como vazio ou algum valor padrão
-        // Se necessário, defina photoURI também ou faça isso em outro lugar
+        this.bio = new Bio("");
     }
 
     public Author(String name, String bio, String photoURI) {
@@ -74,7 +64,6 @@ public class Author extends EntityWithPhoto {
         // got ORM only
     }
 
-
     public void applyPatch(final long desiredVersion, final UpdateAuthorRequest request) {
         if (this.version != desiredVersion)
             throw new StaleObjectStateException("Object was already modified by another user", this.authorNumber);
@@ -82,17 +71,18 @@ public class Author extends EntityWithPhoto {
             setName(request.getName());
         if (request.getBio() != null)
             setBio(request.getBio());
-        if(request.getPhotoURI() != null)
+        if (request.getPhotoURI() != null)
             setPhotoInternal(request.getPhotoURI());
     }
 
     public void removePhoto(long desiredVersion) {
-        if(desiredVersion != this.version) {
+        if (desiredVersion != this.version) {
             throw new ConflictException("Provided version does not match latest version of this object");
         }
 
         setPhotoInternal(null);
     }
+
     public String getName() {
         return this.name.toString();
     }
@@ -101,4 +91,3 @@ public class Author extends EntityWithPhoto {
         return this.bio.toString();
     }
 }
-

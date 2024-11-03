@@ -29,6 +29,8 @@ public class CreateAuthorRequest {
     @Setter
     private String photoURI;
 
-    @NotBlank(message = "ID type must not be blank")
+    @Schema(description = "The ID type for lending: can be 'hexadecimal' or 'alphanumeric'")
     private String idType;
+
+    
 }

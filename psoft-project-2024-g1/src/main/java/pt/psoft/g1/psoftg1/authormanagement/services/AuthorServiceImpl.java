@@ -11,6 +11,7 @@ import pt.psoft.g1.psoftg1.authormanagement.repositories.AuthorRepository;
 import pt.psoft.g1.psoftg1.bookmanagement.model.Book;
 import pt.psoft.g1.psoftg1.bookmanagement.repositories.BookRepository;
 import pt.psoft.g1.psoftg1.exceptions.NotFoundException;
+import pt.psoft.g1.psoftg1.idgeneratormanagement.IdGenerator;
 import pt.psoft.g1.psoftg1.shared.repositories.PhotoRepository;
 
 import java.util.List;
@@ -46,41 +47,31 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public Author create(final CreateAuthorRequest resource) {
-        /*
-         * Since photos can be null (no photo uploaded) that means the URI can be null
-         * as well.
-         * To avoid the client sending false data, photoURI has to be set to any value /
-         * null
-         * according to the MultipartFile photo object
-         *
-         * That means:
-         * - photo = null && photoURI = null -> photo is removed
-         * - photo = null && photoURI = validString -> ignored
-         * - photo = validFile && photoURI = null -> ignored
-         * - photo = validFile && photoURI = validString -> photo is set
-         */
+        // Validating the photo and photoURI conditions
+        MultipartFile photo = resource.getPhoto();
+        String photoURI = resource.getPhotoURI();
 
-         MultipartFile photo = resource.getPhoto();
-         String photoURI = resource.getPhotoURI();
-         
-         // Verificar se a foto e o URI da foto são válidos
-         if (photo == null && photoURI != null || photo != null && photoURI == null) {
-             resource.setPhoto(null);
-             resource.setPhotoURI(null);
-         }
-     
-         // Criação do autor baseado no tipo de ID
-         Author author = mapper.create(resource);
-     
-         // Verifica se o tipo de ID é hexadecimal ou alfanumérico
-         if ("hexadecimal".equalsIgnoreCase(resource.getIdType())) {
-             author = Author.createWithHexadecimalId(resource.getName(), resource.getBio(), photoURI);
-         } else { // padrão para alfanumérico
-             author = Author.createWithAlphanumericId(resource.getName(), resource.getBio(), photoURI);
-         }
-     
-         return authorRepository.save(author);
-     }
+        // Verify if the photo and the photo URI are valid
+        if (photo == null && photoURI != null || photo != null && photoURI == null) {
+            resource.setPhoto(null);
+            resource.setPhotoURI(null);
+        }
+
+        Author author = mapper.create(resource);
+        // Generate the Author ID based on the provided type
+        String authorId;
+        if ("hexadecimal".equalsIgnoreCase(resource.getIdType())) {
+            authorId = IdGenerator.generateHexadecimalId();
+        } else if ("alfanumerico".equalsIgnoreCase(resource.getIdType())) {
+            authorId = IdGenerator.generateAlphanumericId();
+        } else {
+            throw new IllegalArgumentException("Invalid ID type. Only 'hexadecimal' or 'alfanumerico' are allowed.");
+        }
+
+        author.setAuthorId(authorId); // Setting the generated ID
+        // Save the author to the repository
+        return authorRepository.save(author);
+    }
 
     @Override
     public Author partialUpdate(final Long authorNumber, final UpdateAuthorRequest request, final long desiredVersion) {
