@@ -161,7 +161,7 @@ public class SecurityConfig {
                 //lendings
                 .requestMatchers(HttpMethod.GET,"/api/lendings/overdue").hasRole(Role.LIBRARIAN)
                 .requestMatchers(HttpMethod.GET,"/api/lendings/{year}/{seq}").hasAnyRole(Role.READER, Role.LIBRARIAN)
-                .requestMatchers(HttpMethod.POST,"/api/lendings").hasRole(Role.LIBRARIAN)
+                .requestMatchers(HttpMethod.POST,"/api/lendings/create").hasRole(Role.LIBRARIAN)
                 .requestMatchers(HttpMethod.GET,"/api/lendings/avgDuration").hasRole(Role.LIBRARIAN)
                 .requestMatchers(HttpMethod.GET,"/api/lendings/overdue").hasRole(Role.LIBRARIAN)
                 .requestMatchers(HttpMethod.PATCH,"/api/lendings/{year}/{seq}").hasRole(Role.READER)

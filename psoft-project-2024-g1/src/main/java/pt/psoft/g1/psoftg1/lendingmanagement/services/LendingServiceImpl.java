@@ -1,29 +1,25 @@
 package pt.psoft.g1.psoftg1.lendingmanagement.services;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
-import pt.psoft.g1.psoftg1.bookmanagement.model.Book;
 import pt.psoft.g1.psoftg1.bookmanagement.repositories.BookRepository;
-import pt.psoft.g1.psoftg1.bookmanagement.services.GenreBookCountDTO;
 import pt.psoft.g1.psoftg1.exceptions.LendingForbiddenException;
 import pt.psoft.g1.psoftg1.exceptions.NotFoundException;
-import pt.psoft.g1.psoftg1.genremanagement.model.Genre;
 import pt.psoft.g1.psoftg1.genremanagement.repositories.GenreRepository;
 import pt.psoft.g1.psoftg1.idgeneratormanagement.IdGenerator;
+import pt.psoft.g1.psoftg1.idgeneratormanagement.IdGeneratorType;
 import pt.psoft.g1.psoftg1.lendingmanagement.model.Fine;
 import pt.psoft.g1.psoftg1.lendingmanagement.model.Lending;
 import pt.psoft.g1.psoftg1.lendingmanagement.repositories.FineRepository;
 import pt.psoft.g1.psoftg1.lendingmanagement.repositories.LendingRepository;
-import pt.psoft.g1.psoftg1.readermanagement.model.ReaderDetails;
 import pt.psoft.g1.psoftg1.readermanagement.repositories.ReaderRepository;
 import pt.psoft.g1.psoftg1.readermanagement.services.ReaderService;
 import pt.psoft.g1.psoftg1.shared.services.Page;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -40,6 +36,9 @@ public class LendingServiceImpl implements LendingService {
     private final ReaderRepository readerRepository;
     private final ReaderService readerService;
     private final GenreRepository genreRepository;
+
+    @Autowired
+    private IdGeneratorType idGeneratorType;
 
     @Value("${lendingDurationInDays}")
     private int lendingDurationInDays;
@@ -70,7 +69,7 @@ public class LendingServiceImpl implements LendingService {
     @Override
     public Lending create(final CreateLendingRequest resource) {
         int count = 0;
-    
+
         // Validação de livros em atraso
         Iterable<Lending> lendingList = lendingRepository.listOutstandingByReaderNumber(resource.getReaderNumber());
         for (Lending lending : lendingList) {
@@ -82,30 +81,21 @@ public class LendingServiceImpl implements LendingService {
                 throw new LendingForbiddenException("Reader has three books outstanding already");
             }
         }
-    
+
         // Verifica a existência do livro e do leitor
         final var b = bookRepository.findByIsbn(resource.getIsbn())
                 .orElseThrow(() -> new NotFoundException("Book not found"));
         final var r = readerRepository.findByReaderNumber(resource.getReaderNumber())
                 .orElseThrow(() -> new NotFoundException("Reader not found"));
-    
-                String lendingId;
 
-        if ("hexadecimal".equalsIgnoreCase(resource.getIdType())) {
-            lendingId = IdGenerator.generateHexadecimalId(); 
-        } else if ("alfanumerico".equalsIgnoreCase(resource.getIdType())) {
-            lendingId = IdGenerator.generateAlphanumericId(); 
-        } else {
-            throw new IllegalArgumentException("Invalid ID type. Only 'hexadecimal' or 'alfanumerico' are allowed.");
-        }
-    
-        // Criação do objeto Lending com o ID
+        String lendingId = idGeneratorType.generateId();
+
         int seq = lendingRepository.getCountFromCurrentYear() + 1;
         final Lending l = new Lending(b, r, seq, lendingDurationInDays, fineValuePerDayInCents, lendingId);
-    
+
         return lendingRepository.save(l);
     }
-    
+
     @Override
     public Lending setReturned(final String lendingNumber, final SetLendingReturnedRequest resource,
             final long desiredVersion) {

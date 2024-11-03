@@ -22,7 +22,4 @@ public class CreateLendingRequest {
     @NotBlank
     @Size(min = 6, max = 16)
     private String readerNumber;
-
-    @Schema(description = "The ID type for lending: can be 'hexadecimal' or 'alphanumeric'")
-    private String idType;
 }

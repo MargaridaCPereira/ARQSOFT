@@ -1,6 +1,8 @@
 package pt.psoft.g1.psoftg1.authormanagement.services;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,7 +13,7 @@ import pt.psoft.g1.psoftg1.authormanagement.repositories.AuthorRepository;
 import pt.psoft.g1.psoftg1.bookmanagement.model.Book;
 import pt.psoft.g1.psoftg1.bookmanagement.repositories.BookRepository;
 import pt.psoft.g1.psoftg1.exceptions.NotFoundException;
-import pt.psoft.g1.psoftg1.idgeneratormanagement.IdGenerator;
+import pt.psoft.g1.psoftg1.idgeneratormanagement.IdGeneratorType;
 import pt.psoft.g1.psoftg1.shared.repositories.PhotoRepository;
 
 import java.util.List;
@@ -24,6 +26,9 @@ public class AuthorServiceImpl implements AuthorService {
     private final BookRepository bookRepository;
     private final AuthorMapper mapper;
     private final PhotoRepository photoRepository;
+
+    @Autowired
+    private IdGeneratorType idGeneratorType;
 
     @Override
     public Iterable<Author> findAll() {
@@ -58,16 +63,8 @@ public class AuthorServiceImpl implements AuthorService {
         }
 
         Author author = mapper.create(resource);
-        // Generate the Author ID based on the provided type
-        String authorId;
-        if ("hexadecimal".equalsIgnoreCase(resource.getIdType())) {
-            authorId = IdGenerator.generateHexadecimalId();
-        } else if ("alfanumerico".equalsIgnoreCase(resource.getIdType())) {
-            authorId = IdGenerator.generateAlphanumericId();
-        } else {
-            throw new IllegalArgumentException("Invalid ID type. Only 'hexadecimal' or 'alfanumerico' are allowed.");
-        }
-
+        
+        String authorId = idGeneratorType.generateId();
         author.setAuthorId(authorId); // Setting the generated ID
         // Save the author to the repository
         return authorRepository.save(author);

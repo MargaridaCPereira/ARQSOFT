@@ -55,7 +55,7 @@ class AuthorTest {
 
     @Test
     void testCreateAuthorRequestWithoutPhoto() {
-        CreateAuthorRequest request = new CreateAuthorRequest(validName, validBio, null, validName, validBio);
+        CreateAuthorRequest request = new CreateAuthorRequest(validName, validBio, null, null);
         Author author = new Author(request.getName(), request.getBio(), null);
         assertNotNull(author);
         assertNull(author.getPhoto());

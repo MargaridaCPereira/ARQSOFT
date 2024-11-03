@@ -2,7 +2,7 @@ package pt.psoft.g1.psoftg1.authormanagement.services;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,8 +29,4 @@ public class CreateAuthorRequest {
     @Setter
     private String photoURI;
 
-    @Schema(description = "The ID type for lending: can be 'hexadecimal' or 'alphanumeric'")
-    private String idType;
-
-    
 }

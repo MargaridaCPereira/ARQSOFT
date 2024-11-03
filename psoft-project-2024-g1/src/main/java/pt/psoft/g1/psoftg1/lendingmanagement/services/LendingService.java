@@ -1,6 +1,5 @@
 package pt.psoft.g1.psoftg1.lendingmanagement.services;
 
-import pt.psoft.g1.psoftg1.bookmanagement.model.Book;
 import pt.psoft.g1.psoftg1.lendingmanagement.model.Lending;
 import pt.psoft.g1.psoftg1.shared.services.Page;
 

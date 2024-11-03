@@ -1,7 +1,6 @@
 package pt.psoft.g1.psoftg1.lendingmanagement.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
