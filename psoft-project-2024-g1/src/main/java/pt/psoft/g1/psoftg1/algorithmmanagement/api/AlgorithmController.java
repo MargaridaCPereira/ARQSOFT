@@ -1,4 +1,4 @@
-package pt.psoft.g1.psoftg1.algorithms.api;
+package pt.psoft.g1.psoftg1.algorithmmanagement.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
 
-import pt.psoft.g1.psoftg1.algorithms.service.AlgorithmService;
+import pt.psoft.g1.psoftg1.algorithmmanagement.service.AlgorithmService;
 import pt.psoft.g1.psoftg1.bookmanagement.model.Book;
 import java.util.List;
 

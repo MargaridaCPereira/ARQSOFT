@@ -1,4 +1,4 @@
-package pt.psoft.g1.psoftg1.algorithms.service;
+package pt.psoft.g1.psoftg1.algorithmmanagement.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,24 +54,24 @@ public class AlgorithmServiceImpl implements AlgorithmService {
         }
 
         ReaderDetails readerDetails = optionalReaderDetails.get();
-        List<Book> lendings = new ArrayList<>();
+        List<Book> recommendedBooks = new ArrayList<>();
 
         int age = readerDetails.getBirthDate().getAge(); 
 
         // Lógica de recomendação baseada na idade
         if (age < 10) {
-            lendings = getTopLentBooksByGenre("children", X);
+            recommendedBooks = getTopLentBooksByGenre("children", X);
         } else if (age >= 10 && age < 18) {
-            lendings = getTopLentBooksByGenre("juvenile", X);
+            recommendedBooks = getTopLentBooksByGenre("juvenile", X);
         } else {
             List<Genre> topGenres = readerDetails.getInterestList();
             if(!topGenres.isEmpty()){
                 for (Genre genre : topGenres) {
-                    lendings.addAll(getTopLentBooksByGenre(genre.getGenre(), X));
+                    recommendedBooks.addAll(getTopLentBooksByGenre(genre.getGenre(), X));
                 }
             }
         }
-        return lendings;
+        return recommendedBooks;
     }
 
     @Override
@@ -80,15 +80,15 @@ public class AlgorithmServiceImpl implements AlgorithmService {
         List<Genre> topGenres = getTopGenres(Y);
 
         // Passo 2: Obter os X livros mais emprestados de cada um dos gêneros
-        List<Book> lendings = new ArrayList<>();
+        List<Book> recommendedBooks = new ArrayList<>();
 
         if(!topGenres.isEmpty()){
             for (Genre genre : topGenres) {
-                lendings.addAll(getTopLentBooksByGenre(genre.getGenre(), X));
+                recommendedBooks.addAll(getTopLentBooksByGenre(genre.getGenre(), X));
             }
         }
 
-        return lendings;
+        return recommendedBooks;
     }
 
 }
